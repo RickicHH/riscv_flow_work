@@ -1,0 +1,59 @@
+# this is flow steps config file
+# python script will parse this file to generate flow steps, out put shell script file
+# then shell script file will be used to invoke python scripts to run flow for each testcase
+#   1> python publish.py -module <cwd> -out <cwd>       output: mv DE files like .v to rtl , mv DV files like .sv to test
+#   2> python post_publish.py -module <cwd> -out <cwd>  output: vcs_cfg.mk and Makefile
+#   3> make analysis > vlogan.log
+#   4> make compile > compile.log
+#   5> make tool_chain_compile > compile.log
+#   4> make simulation > run.log
+#   5> python post_sim.py  >run.log
+# finally python engine will run this shell script file to run flow
+
+- tool: vcs
+# invoke publish flow to translte .j2 or .erb files to .sv or .v files 
+  publish:
+    cmd: 
+      - "python publish.py -module <cwd> -out <cwd>"
+
+# this is used to generate test list, random seed and so on, output a vcs_cfg.mk Makefile
+  post_publish:
+    cmd:
+      -"python post_publish.py -module <cwd> -out <cwd>"
+
+# this is used to compile v files and sv files
+  analysis:
+    cmd: 
+      - "vlogan -full64 -ntb_opts uvm-1.2 
+                -sverilog -timescale=1ps/1ps -nc 
+                -l $(OUT)/log/comp.log 
+                -output $(OUT)/log/vlogan.log $(VCOMP_INC)"
+
+# this is used to compile c files
+  pre_compile:
+    cmd:
+      - "make -s $(CASE)_build"
+    cov_opts: 
+      -cm_dir <out>/test.vdb
+
+# this is used to compile .simv files
+  compile:
+    cmd:
+      - "vcs -full64 -ntb_opts uvm-1.2 -debug_acc+all -l $(OUT)/log/elab.log -sim_res=1ps  "
+    cov_opts: 
+      -cm_dir <out>/test.vdb
+
+# this is used to run simulation
+  sim:
+    cmd: >
+      $(OUT)/obj/$(TB).simv -sparse+stats  -l run.log -sml +ntb_random_seed=$(SEED) +UVM_TESTNAME=$(TESTNAME) +UVM_VERBOSITY=$(VERB) -cm_dir $(CM_DIR) -cm_name $(CM_NAME)
+    cov_opts: 
+      -cm_dir <out>/test.vdb -cm_log /dev/null -cm_name test_<seed>_<test_id>
+  
+# this is used to analyze simulation result
+  post_sim:
+    cmd:
+      - "python post_sim.py -module <cwd> -out <cwd>"
+
+
+    
