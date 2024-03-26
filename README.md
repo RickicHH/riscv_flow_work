@@ -37,35 +37,34 @@ dvrun执行以后，依次生成vcs_cfg.mk 和Makefile， <test_name>\_run.sh �
 ```
  
  flow_work 文件结构为：
- ```
-├── dvrun.py
+ ```├── dvrun.py
 ├── infra
-│   ├── scripts
-│   │   ├── flow
-│   │   │   ├── common_scripts
-│   │   │   │   ├── lib.py
-│   │   │   ├── publish.py
-│   │   │   └── simulator.yaml
-│   │   │   └── result_analysis.py
-│   │   └── uvmgen
-│   ├── template
-│   └── tool_chain
+│   ├── scripts
+│   │   ├── flow
+│   │   │   ├── common_scripts
+│   │   │   │   ├── lib.py
+│   │   │   ├── publish.py
+│   │   │   └── simulator.yaml
+│   │   │   └── result_analysis.py
+│   │   └── uvmgen
+│   ├── template
+│   └── tool_chain
 ├── __init__.py
 ├── Makefile
 ├── project.cfg
 ├── README.md
 ├── requirements.txt
 ├── src
-│   ├── rtl
-│   └── verify
-│       ├── cfg
-│       ├── cov
-│       ├── env
-│       ├── reg
-│       ├── seq
-│       ├── tb
-│       │   └── c_testlib.yaml
-│       └── test
+│   ├── rtl
+│   └── verify
+│       ├── cfg
+│       ├── cov
+│       ├── env
+│       ├── reg
+│       ├── seq
+│       ├── tb
+│       │   └── c_testlib.yaml
+│       └── test
 ├── template
 └── yaml
     ├── base_test_share.yaml
