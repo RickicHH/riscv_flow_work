@@ -43,7 +43,7 @@ class Publish(object):
             self._translate_j2(os.path.join(self.publish_out,'rtl'),config_list)
             self._translate_j2(os.path.join(self.publish_out,'verify'),config_list)
             logging.info("publish translate done")
-        # 3. test_lib list
+
         
     def _copy_file(self,src,dst):
         for root, dirs, files in os.walk(src):
@@ -86,7 +86,29 @@ class Publish(object):
                     subprocess.run(f"rm {os.path.join(root, file)}", shell=True, check=True)
 
 
+class Test_lib(Publish):
+    def __init__(self,file_path):
+        super().__init__(file_path)
 
+    def run(self):
+
+        pass
+
+    def get_c_test_lib(self):
+        pass
+    def get_uvm_test_lib(self):
+        pass
+
+    def publish_share_command(self):
+        pass
+
+    def publish_each_test_command(self):
+        pass
+
+    def test_is_child(self,test_name):
+        pass
+    def test_is_parent(self,test_name):
+        pass
 
 ###########################################################################################
 # aims to run publish.py in local, add below main()                                       #
