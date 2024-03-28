@@ -19,7 +19,7 @@ class Publish(object):
             self._copy_file(self.publish_src,self.publish_out)
             logging.info("local publish done")
             logging.info("local publish translate start")
-            config_list=self._load_config(self.flow_config)
+            config_list=self.get_project_config(self.flow_config)
             self._translate_j2(self.publish_out,config_list)
             logging.info("local publish translate done")
         else :
@@ -36,7 +36,7 @@ class Publish(object):
             logging.info("publish verify done")
         # 2. translate .j2 
             logging.info("publish load config start")
-            config_list=self._load_config(self.flow_config)
+            config_list=self.get_project_config(self.flow_config)
             logging.info("publish load config done")
             logging.info("publish translate start")
             self._translate_j2(os.path.join(self.publish_out,'rtl'),config_list)
@@ -47,7 +47,7 @@ class Publish(object):
     def _copy_file(self,src,dst):
         for root, dirs, files in os.walk(src):
             for file in files:
-                if file.endswith('.v' or '.sv' or '.j2' or '.yaml'): 
+                if file.endswith('.v' or '.sv' or '.j2' or '.yaml' or '.c'): 
                     src_file = os.path.join(root, file)  
                     dst_file = os.path.join(dst, file)  
                     shutil.copy(src_file, dst_file)  
@@ -60,7 +60,7 @@ class Publish(object):
         return os.path.join(self.publish_out,file_path)
     
     # load config from project.cfg
-    def _load_config(self,cfg_path):
+    def get_project_config(self,cfg_path):
         # cfg=configparser.ConfigParser()
         # cfg.read(cfg_path)
         # config_list=[]
