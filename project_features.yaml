@@ -1,0 +1,18 @@
+# [risc_v]
+
+
+# project_name:risc_v_project
+# project_description:risc_v_project
+# project_version:0.1
+
+# OOO_en:1
+
+
+risc_v_feature:
+  - feature_name: g1/0/1
+    desc: jinja2_render_config
+    value: access
+  - iface_name: g1/0/2
+    desc: 
+    desc: jinja2_render_config
+    value: access

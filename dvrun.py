@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import configparser
 import os
 import argparse
 import logging
@@ -59,14 +58,14 @@ def generate_test_lib_all(config_list):
     env = Environment(loader=FileSystemLoader(os.environ["RISCV_DV_ROOT"]))
     template = env.get_template("test_lib_all.sv")
     output = template.render(config_list)  
-def load_config(cfg_path):
-    cfg=configparser.ConfigParser()
-    cfg.read(cfg_path)
-    config_list=[]
-    for section in cfg.sections():
-        for key in cfg[section]:
-            config_list.append((key,cfg[section][key]))
-    return [{k:v} for k,v in dict(config_list).items()]
+# def load_config(cfg_path):
+#     cfg=configparser.ConfigParser()
+#     cfg.read(cfg_path)
+#     config_list=[]
+#     for section in cfg.sections():
+#         for key in cfg[section]:
+#             config_list.append((key,cfg[section][key]))
+#     return [{k:v} for k,v in dict(config_list).items()]
 
 
 def _get_test_lib_list(self):
@@ -83,7 +82,7 @@ def main():
     
     logging.info(vars(args))
 
-    publish = Publish(os.path.join(os.environ["RISCV_DV_ROOT"],'src'),os.environ["RISCV_DV_PUBLISH_OUT"],os.path.join(os.environ["RISCV_DV_ROOT"],'project.cfg'))
+    publish = Publish(os.path.join(os.environ["RISCV_DV_ROOT"],'src'),os.environ["RISCV_DV_PUBLISH_OUT"],os.path.join(os.environ["RISCV_DV_ROOT"],'project_features.yaml'))
     publish.start()
 
     

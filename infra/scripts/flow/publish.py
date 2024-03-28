@@ -1,5 +1,4 @@
 import argparse
-import configparser
 import os
 import shutil
 import subprocess
@@ -48,7 +47,7 @@ class Publish(object):
     def _copy_file(self,src,dst):
         for root, dirs, files in os.walk(src):
             for file in files:
-                if file.endswith('.v' or '.sv' or '.j2'): 
+                if file.endswith('.v' or '.sv' or '.j2' or '.yaml'): 
                     src_file = os.path.join(root, file)  
                     dst_file = os.path.join(dst, file)  
                     shutil.copy(src_file, dst_file)  
@@ -62,14 +61,18 @@ class Publish(object):
     
     # load config from project.cfg
     def _load_config(self,cfg_path):
-        cfg=configparser.ConfigParser()
-        cfg.read(cfg_path)
-        config_list=[]
-        for section in cfg.sections():
-            for key in cfg[section]:
-                config_list.append((key,cfg[section][key]))
-                logging.info(f'config value: {key} = {cfg[section][key]}')
-        return [{k:v} for k,v in dict(config_list).items()]
+        # cfg=configparser.ConfigParser()
+        # cfg.read(cfg_path)
+        # config_list=[]
+        # for section in cfg.sections():
+        #     for key in cfg[section]:
+        #         config_list.append((key,cfg[section][key]))
+        #         logging.info(f'config value: {key} = {cfg[section][key]}')
+        # return [{k:v} for k,v in dict(config_list).items()]
+        with open(cfg_path, 'r') as f:
+            config_list = yaml.safe_load(f.read())
+            logging.info(f'config value: {config_list}')
+        return config_list
     
     def _translate_j2(self,path,config_list):
         # 1. translate .j2 to .sv
@@ -87,17 +90,27 @@ class Publish(object):
 
 
 class Test_lib(Publish):
-    def __init__(self,file_path):
-        super().__init__(file_path)
+    def __init__(self):
+        super().__init__(self)
 
     def run(self):
 
         pass
 
-    def get_c_test_lib(self):
-        pass
-    def get_uvm_test_lib(self):
-        pass
+    def get_c_test_lib(self,publish_out_path):
+        for root, dirs, files in os.walk(publish_out_path):
+            for file in files:
+                if file.endswith('_c_test_list.yaml'): 
+                    return os.path.join(root, file)
+                else:
+                    continue
+    def get_uvm_test_lib(self,publish_out_path):
+        for root, dirs, files in os.walk(publish_out_path):
+            for file in files:
+                if file.endswith('_uvm_test_list.yaml'): 
+                    return os.path.join(root, file)
+                else:
+                    continue
 
     def publish_share_command(self):
         pass
