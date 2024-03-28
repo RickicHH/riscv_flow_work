@@ -19,7 +19,7 @@ class Publish(object):
             self._copy_file(self.publish_src,self.publish_out)
             logging.info("local publish done")
             logging.info("local publish translate start")
-            config_list=self.get_project_config(self.flow_config)
+            config_list=get_project_config(self.flow_config)
             self._translate_j2(self.publish_out,config_list)
             logging.info("local publish translate done")
         else :
@@ -36,7 +36,7 @@ class Publish(object):
             logging.info("publish verify done")
         # 2. translate .j2 
             logging.info("publish load config start")
-            config_list=self.get_project_config(self.flow_config)
+            config_list=get_project_config(self.flow_config)
             logging.info("publish load config done")
             logging.info("publish translate start")
             self._translate_j2(os.path.join(self.publish_out,'rtl'),config_list)
@@ -59,20 +59,6 @@ class Publish(object):
     def get_publish_file_path(self,file_path):
         return os.path.join(self.publish_out,file_path)
     
-    # load config from project.cfg
-    def get_project_config(self,cfg_path):
-        # cfg=configparser.ConfigParser()
-        # cfg.read(cfg_path)
-        # config_list=[]
-        # for section in cfg.sections():
-        #     for key in cfg[section]:
-        #         config_list.append((key,cfg[section][key]))
-        #         logging.info(f'config value: {key} = {cfg[section][key]}')
-        # return [{k:v} for k,v in dict(config_list).items()]
-        with open(cfg_path, 'r') as f:
-            config_list = yaml.safe_load(f.read())
-            logging.info(f'config value: {config_list}')
-        return config_list
     
     def _translate_j2(self,path,config_list):
         # 1. translate .j2 to .sv
@@ -111,6 +97,23 @@ class Test_lib(Publish):
                     return os.path.join(root, file)
                 else:
                     continue
+    def is_test_father(self,test_name):
+        pass
+    
+    def is_test_child(self,test_name):
+        pass
+
+    def get_father_test_cfg(self,father_test_name):
+        pass
+
+    def get_child_test_cfg(self,child_test_name):
+        pass
+
+    def merger_fater_test_cfg(self,father_test_name,child_test_name):
+        pass
+
+    def get_child_test_cfg(self,child_test_name):
+        pass
 
     def publish_share_command(self):
         pass
