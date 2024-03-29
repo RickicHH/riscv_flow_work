@@ -37,34 +37,35 @@ dvrun执行以后，依次生成vcs_cfg.mk 和Makefile， <test_name>\_run.sh �
 ```
  
  flow_work 文件结构为：
- ```├── dvrun.py
+ ```
+├── dvrun.py
 ├── infra
-│   ├── scripts
-│   │   ├── flow
-│   │   │   ├── common_scripts
-│   │   │   │   ├── lib.py
-│   │   │   ├── publish.py
-│   │   │   └── simulator.yaml
-│   │   │   └── result_analysis.py
-│   │   └── uvmgen
-│   ├── template
-│   └── tool_chain
+│   ├── scripts
+│   │   ├── flow
+│   │   │   ├── common_scripts
+│   │   │   │   ├── lib.py
+│   │   │   ├── publish.py
+│   │   │   └── simulator.yaml
+│   │   │   └── result_analysis.py
+│   │   └── uvmgen
+│   ├── template
+│   └── tool_chain
 ├── __init__.py
 ├── Makefile
 ├── project.cfg
 ├── README.md
 ├── requirements.txt
 ├── src
-│   ├── rtl
-│   └── verify
-│       ├── cfg
-│       ├── cov
-│       ├── env
-│       ├── reg
-│       ├── seq
-│       ├── tb
-│       │   └── c_testlib.yaml
-│       └── test
+│   ├── rtl
+│   └── verify
+│       ├── cfg
+│       ├── cov
+│       ├── env
+│       ├── reg
+│       ├── seq
+│       ├── tb
+│       │   └── c_testlib.yaml
+│       └── test
 ├── template
 └── yaml
     ├── base_test_share.yaml
@@ -100,7 +101,13 @@ publish.start()
 ### 3.1.1 test list
 1. test list 有两个C_list && UVM_list
 2. test list 定义在test_yaml路径下，每一个模块定义一个test_yaml, 比如bus_test.yaml.
-3. 有一个base_share.yaml ，用来储存共同的通用的配置， 如果某一个test需要使用，只需要extend它就可以了。
+3. 有一个base_share.yaml ，用来储存共同的通用的配置， 如果某一个test需要使用，只需要extend它就可以了: 定义了father_test_name, 会根据test_name和father_test_name 进行递归，将test_option 和 regression tag 进行merge, 将父类的option和tag都贴到child test 对应的item中。具体的流程为：
+	1. get  c_test_dict  uvm_test_dict
+	2. get base_test_share
+	3. copy and merge father test_option  to child test_option and regression tag
+	4. 输出两个final_test_list : uvm_final_test_list & c_final_test_list
+	5. 判断args是否有定义test case ， 如果有，判断是否存在于final_test_list中，如果args没有定义args，判断一下args中是否定义了regr_tag，如果有，按照args.regr_tag来筛选出regression_test_list. 
+4. 最后产生两个final test list.
 ### 3.1.2 .j2 render
 ### 3.1.3 config publish
 ## 3.2 tool chain compile
