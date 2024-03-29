@@ -75,56 +75,6 @@ class Publish(object):
                     subprocess.run(f"rm {os.path.join(root, file)}", shell=True, check=True)
 
 
-class Test_lib(Publish):
-    def __init__(self):
-        super().__init__(self)
-
-    def run(self):
-
-        pass
-
-    def get_c_test_lib(self,publish_out_path):
-        for root, dirs, files in os.walk(publish_out_path):
-            for file in files:
-                if file.endswith('_c_test_list.yaml'): 
-                    return os.path.join(root, file)
-                else:
-                    continue
-    def get_uvm_test_lib(self,publish_out_path):
-        for root, dirs, files in os.walk(publish_out_path):
-            for file in files:
-                if file.endswith('_uvm_test_list.yaml'): 
-                    return os.path.join(root, file)
-                else:
-                    continue
-    def is_test_father(self,test_name):
-        pass
-    
-    def is_test_child(self,test_name):
-        pass
-
-    def get_father_test_cfg(self,father_test_name):
-        pass
-
-    def get_child_test_cfg(self,child_test_name):
-        pass
-
-    def merger_fater_test_cfg(self,father_test_name,child_test_name):
-        pass
-
-    def get_child_test_cfg(self,child_test_name):
-        pass
-
-    def publish_share_command(self):
-        pass
-
-    def publish_each_test_command(self):
-        pass
-
-    def test_is_child(self,test_name):
-        pass
-    def test_is_parent(self,test_name):
-        pass
 
 ###########################################################################################
 # aims to run publish.py in local, add below main()                                       #
