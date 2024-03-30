@@ -1,0 +1,19 @@
+risc_v_uvm_test_lib:  
+  - test_name: hello_world  
+    father_test_name: risc_v_c_base  
+    test_type: c_test  
+    tb_name: tb  
+    test_file: hello_world.c  
+    test_option:  
+      - abcd_random_enable: 50  
+      - abcd_random_disable: 50  
+    regression_tag: "sanity"  
+    test_description: ""
+{%for i in range(2)%}
+  - test_name: hello_world_{{i}}
+    father_test_name: hello_world
+    test_type: c_test
+    test_file: hello_world.c
+    regression_tag:"sanity"
+    test_description:""
+{%endfor%}

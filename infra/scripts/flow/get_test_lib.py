@@ -9,52 +9,56 @@ from infra.scripts.flow.publish import *
 
 
 class Test_lib(Publish):
-    def __init__(self):
+    def __init__(self,args):
         super().__init__(self)
-
+        self.args=args
+        self.c_test_dict=[]
+        self.uvm_test_dict=[]
     def run(self):
-        # 1 get test_dict
-        c_test_file=self.get_test_file(self.publish_out,"_c_test_list.yaml")
-        c_test_dict=self.get_test_dict(c_test_file)
-        uvm_test_file=self.get_test_file(self.publish_out,"_uvm_test_list.yaml")
-        uvm_test_dict=self.get_test_dict(uvm_test_file)
+        # 1 if args.test_case in the dict
+        self.check_and_refresh_tc(self.args)      
+
+    def refresh_test_dict(self,publish_out,suffix,target_tset_lib):
+        '''
+        output a new test dict that child test has father's attribute
+        '''
+        test_file=self.get_test_file(publish_out,suffix)
+        test_dict=self.get_test_dict(test_file,target_tset_lib)
         base_test_share=self.get_test_file(self.publish_out,"_base_test_share.yaml")
-        base_test_share_dict=self.get_test_dict(base_test_share)
-        # 2 merge test_dict
-        c_test_dict.update(base_test_share_dict)
-        uvm_test_dict.update(base_test_share_dict)
-
-        # 3 copy and merge father test_option to child test_option
-        self.merge_father_details(c_test_dict)
-        self.merge_father_details(uvm_test_dict)
-
-        # 4 
+        base_test_share_dict=self.get_test_dict(base_test_share,"risc_v_base_test_share")
+        test_dict.extend(base_test_share_dict)
+        return self.inherit_properties(test_dict)
 
     def get_test_file(self,publish_out_path,suffix):
+        '''
+        output yaml path
+        '''
         for root, dirs, files in os.walk(publish_out_path):
             for file in files:
                 if file.endswith(suffix): 
                     return os.path.join(root, file)
                 else:
                     continue
-    
     def get_test_dict(self,yaml_file,test_lib_name):
+        '''
+        out put test list and attributs
+        '''
         yaml_data=read_yaml(yaml_file)
         return yaml_data[test_lib_name]
+
     def get_test_list(self,test_dict):
-        return [item['test_name'] for item in test_dict]  
-        
+        '''
+        output a list which only have test_name
+        '''
+        return [item['test_name'] for item in test_dict]    
     def get_test_attribute(self,test_name,attribute_name,test_dict):
         for test in test_dict:  
-            if test['test_name'] == str(test_name):  
+            if test[str(test_name)] == str(test_name):  
                 value = test[str(attribute_name)]  
-                break  
+                return value
             else:   
-                print(f"Test with test name '{test_name}' not found.")  
-                value = None  
-        return value
-    
-
+                logging.error(f"'{test_name}' not found.")  
+        return ValueError(f" '{test_name}' not found the attribute {attribute_name} in the cfg file.") 
     def is_test_father(self,test_name,test_dict):
         for item in test_dict:  
             if item['test_name'] == test_name:  
@@ -62,8 +66,7 @@ class Test_lib(Publish):
                     return True  
                 else:  
                     return 0  
-        return None  
-    
+        return None     
     def is_test_child(self,test_name,test_dict):
         for item in test_dict:  
             if item['test_name'] == test_name:  
@@ -72,49 +75,100 @@ class Test_lib(Publish):
                 else:  
                     return 0  
         raise ValueError(f"Test name '{test_name}' not found in the test list.") 
-
     def get_father_test_attribute(self,father_test_name,attribute_name,test_dict):
         for item in test_dict:  
             if item['test_name'] == father_test_name:  
                 return item[attribute_name]  
         return ValueError(f"Fater test name '{father_test_name}' not found in the test list.") 
-
-    def merge_and_deduplicate(self,options):  
-        return list(dict.fromkeys(options))  
     
-    def merge_father_details(self,test_list):  
-        # 递归函数，用于合并父类和子类的信息  
-        def merge_recursive(test_item):  
-            # 当前测试项的名称  
-            current_test_name = test_item['test_name']  
-            # 如果存在父类，递归合并父类信息  
-            if 'father_test_name' in test_item:  
-                father_name = test_item['father_test_name']  
-                father_test = next((item for item in test_list if item['test_name'] == father_name), None)  
-                if father_test:  
-                    # 递归合并父类信息  
-                    merge_recursive(father_test)  
-                    
-                    # 合并选项和标签，并删除重复项  
-                    test_item['test_option'] = self.merge_and_deduplicate(test_item['test_option'] + father_test['test_option'])  
-                    test_item['regression_tag'] = self.merge_and_deduplicate(test_item['regression_tag'] + father_test['regression_tag'])  
+    def publish_each_test_command(self,test_name):
+        pass
+    def if_test_in_dict(self, test_name, test_dict):
+        if any(item['test_name'] == test_name for item in test_dict): 
+            return True
+        else: 
+            return False
+    def check_and_refresh_tc(self, args):
+        self.c_test_list = self.refresh_test_dict(self.publish_out,"_c_test_list.yaml","risc_v_c_test_lib")
+        self.uvm_test_list = self.refresh_test_dict(self.publish_out,"_uvm_test_list.yaml","risc_v_uvm_test_lib")
+        if len (args.test_case)==0:
+            logging.info('test_case is empty')
+            if len(args.regr_tag):
+                logging.error('test_case and regr_tag are empty, you must define one of it')
+                exit(1)
+            else:
+                logging.info(f'this run is regression , your regression tag is{args.tag}')
+        else:
+            for test in args.test_case:
+                if self.if_test_in_dict(test,self.c_test_list):
+                    logging.info(f'{test} is in c_test_list')
+                elif self.if_test_in_dict(test,self.uvm_test_list):
+                    logging.info(f'{test} is in uvm_test_list')
+                else:
+                    logging.error(f'{test} is not in the list')
+                    exit(1)
+    
+    def merge_and_deduplicate(self,d1, d2):  
+        """
+        合并两个字典，并去重
+        """  
+        merged = d1.copy()  
+        for key, value in d2.items():  
+            if key in merged and merged[key] == value:  
+                # 如果键存在且值相同，则不合并，避免重复  
+                continue  
+            merged[key] = value  
+        return merged  
+  
+    def merge_tags(self,child_tags, father_tags):  
+        """
+        合并标签，并去重
+        """  
+        if isinstance(child_tags, str):  
+            child_tags = [child_tags]  # 如果是字符串，转化为列表  
+        if isinstance(father_tags, str):  
+            father_tags = [father_tags]  # 如果是字符串，转化为列表  
+        merged_tags = list(set(child_tags + father_tags))  # 合并并去重  
+        return merged_tags  
+  
+    def inherit_properties(self,tests):  
+        """
+        遍历tests,继承父类的属性并去重
+        """  
+        # 创建一个字典，用于快速查找tests  
+        test_dict = {test['test_name']: test for test in tests}  
+        # 遍历每个test  
+        for test in tests:  
+            test_name = test['test_name']  
+            father_name = test.get('father_test_name', '')  
             
-            # 移除father_test_name字段  
-            test_item.pop('father_test_name', None)  
-        
-        # 对每个测试项应用递归合并函数  
-        for test in test_list:  
-            merge_recursive(test)  
-        
-        # 无需返回新的列表，因为我们在原地修改了test_list  
-
-    def publish_share_command(self):
-        pass
-
-    def publish_each_test_command(self):
-        pass
-
-
+            # 初始化子类的属性  
+            child_options = test.get('test_option', {})  
+            child_tags = test.get('regression_tag', [])  
+            
+            # 递归地继承父类的属性  
+            while father_name:  
+                if father_name not in test_dict:  
+                    break  # 如果找不到父类，则停止继承  
+                
+                father_test = test_dict[father_name]  
+                father_options = father_test.get('test_option', {})  
+                father_tags = father_test.get('regression_tag', [])  
+                
+                # 合并并去重test_option  
+                child_options = self.merge_and_deduplicate(child_options, father_options)  
+                
+                # 合并regression_tag  
+                child_tags = self.merge_tags(child_tags, father_tags)  
+                
+                # 继续向上查找祖父类  
+                father_name = father_test.get('father_test_name', '')  
+            
+            # 更新子类的属性  
+            test['test_option'] = child_options  
+            test['regression_tag'] = child_tags  
+        return tests  
+    
 ###########################################################################################
 # aims to run publish.py in local, add below main()                                       #
 # you must specify 3 arguments: publish_src, publish_out, flow_config                     #
