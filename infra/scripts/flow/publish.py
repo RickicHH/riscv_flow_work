@@ -7,7 +7,8 @@ from jinja2 import Environment, FileSystemLoader
 from infra.scripts.flow.lib import *
 
 class Publish(object):
-    def __init__(self,publish_src,publish_out,flow_config,local_only_run=0):
+    def __init__(self,args,publish_src,publish_out,flow_config,local_only_run=0):
+        self.args = args
         self.publish_src = publish_src
         self.publish_out = publish_out
         self.flow_config = flow_config
@@ -96,7 +97,7 @@ def main():
     local_only_run=1
     args=parse_args()
     setup_logging(args.log_verbose)
-    publish = Publish(args.publish_src,args.publish_out,args.flow_config,local_only_run)
+    publish = Publish(args,args.publish_src,args.publish_out,args.flow_config,local_only_run)
     publish.start()
 
 if __name__ == "__main__":
