@@ -16,7 +16,7 @@ class Test_lib(Publish):
         self.uvm_test_dict=[]
     def run(self):
         # 1 if args.test_case in the dict
-        self.check_and_refresh_tc(self.args)      
+        self.refresh_tc()      
 
     def refresh_test_dict(self,publish_out,suffix,target_tset_lib):
         '''
@@ -80,17 +80,36 @@ class Test_lib(Publish):
             if item['test_name'] == father_test_name:  
                 return item[attribute_name]  
         return ValueError(f"Fater test name '{father_test_name}' not found in the test list.") 
-    
-    def publish_each_test_command(self,test_name):
+    def get_test_command(self,test_name):
         pass
-    def if_test_in_dict(self, test_name, test_dict):
-        if any(item['test_name'] == test_name for item in test_dict): 
-            return True
+    def check_tc_exist(self, test_name):
+        self.refresh_tc()
+        if any(item['test_name'] == test_name for item in self.c_test_dict): 
+            c_n=1
         else: 
+            c_n=0
+        if any(item['father_test_name'] == test_name for item in self.uvm_test_dict):
+            u_n=1
+        else:
+            u_n=0
+        if c_n+u_n==0:
             return False
-    def check_and_refresh_tc(self, args):
-        self.c_test_list = self.refresh_test_dict(self.publish_out,"_c_test_list.yaml","risc_v_c_test_lib")
-        self.uvm_test_list = self.refresh_test_dict(self.publish_out,"_uvm_test_list.yaml","risc_v_uvm_test_lib")
+        else:
+            return True
+        
+    def get_test_command(self,test_name):
+        # 1 check test exist 
+        self.check_tc_exist(test_name)
+        # 2 return test and command
+        test_list=[]
+        test_list.extend(self.c_test_dict)
+        test_list.extend(self.uvm_test_dict)
+        for item in test_list:
+            if item['test_name'] == test_name:
+                return item['test_command']
+
+    def check_args_tc_exist(self,args):
+        self.refresh_tc()
         if len (args.test_case)==0:
             logging.info('test_case is empty')
             if len(args.regr_tag):
@@ -107,7 +126,9 @@ class Test_lib(Publish):
                 else:
                     logging.error(f'{test} is not in the list')
                     exit(1)
-    
+    def refresh_tc(self):
+        self.c_test_list = self.refresh_test_dict(self.publish_out,"_c_test_list.yaml","risc_v_c_test_lib")
+        self.uvm_test_list = self.refresh_test_dict(self.publish_out,"_uvm_test_list.yaml","risc_v_uvm_test_lib")
     def merge_and_deduplicate(self,d1, d2):  
         """
         合并两个字典，并去重
@@ -119,7 +140,6 @@ class Test_lib(Publish):
                 continue  
             merged[key] = value  
         return merged  
-  
     def merge_tags(self,child_tags, father_tags):  
         """
         合并标签，并去重
@@ -130,7 +150,6 @@ class Test_lib(Publish):
             father_tags = [father_tags]  # 如果是字符串，转化为列表  
         merged_tags = list(set(child_tags + father_tags))  # 合并并去重  
         return merged_tags  
-  
     def inherit_properties(self,tests):  
         """
         遍历tests,继承父类的属性并去重
