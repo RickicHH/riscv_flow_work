@@ -53,26 +53,8 @@ def parse_args():
     return args 
 
 
-# generate test_lib_all
-def generate_test_lib_all(config_list):
-    env = Environment(loader=FileSystemLoader(os.environ["RISCV_DV_ROOT"]))
-    template = env.get_template("test_lib_all.sv")
-    output = template.render(config_list)  
-# def load_config(cfg_path):
-#     cfg=configparser.ConfigParser()
-#     cfg.read(cfg_path)
-#     config_list=[]
-#     for section in cfg.sections():
-#         for key in cfg[section]:
-#             config_list.append((key,cfg[section][key]))
-#     return [{k:v} for k,v in dict(config_list).items()]
 
 
-def _get_test_lib_list(self):
-    #1. get yaml file path and name who define test_lib
-    #2. get test_lib name
-    #3. return test_lib list
-    pass
 def main():
 # get directory path
     cwd=get_dir_path()

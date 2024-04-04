@@ -47,3 +47,7 @@ def read_yaml(yaml_file):
             sys.exit(RETURN_FAIL)
     return yaml_data
 
+def get_project_config(yaml_file):
+    with open (yaml_file, 'r') as f:
+        vars =yaml.safe_load(f.read())
+    return vars
